@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Our Products That We have made - Explore and feel free to take consultancy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <input type="text" id="searchInput" placeholder="Start your search...">
+
+  <div class="box-container" id="boxContainer"></div>
+
+  <script src="data.js"></script>
+  <script>
+    let boxes = JSON.parse(JSON.stringify(defaultBoxes));
+
+    function highlightText(text, searchTerm) {
+      if (!searchTerm) return text;
+      const regex = new RegExp(`(${searchTerm})`, 'gi');
+      return text.replace(regex, '<mark>$1</mark>');
+    }
+
+    function matchesSearch(text, searchTerm) {
+      return text.toLowerCase().includes(searchTerm.toLowerCase());
+    }
+
+    function renderBoxes(searchTerm = '') {
+      const container = document.getElementById('boxContainer');
+      container.innerHTML = '';
+
+      boxes.forEach((box, index) => {
+        const inName = matchesSearch(box.name, searchTerm);
+        const inDesc = matchesSearch(box.description || '', searchTerm);
+        const anyLinkMatches = box.links.some(link => matchesSearch(link, searchTerm));
+
+        if (searchTerm && !inName && !inDesc && !anyLinkMatches) return;
+
+        const el = document.createElement('div');
+        el.className = 'box';
+
+        const highlightedName = highlightText(box.name, searchTerm);
+        const highlightedDesc = highlightText(box.description || '', searchTerm);
+
+        const firstLink = box.links[0] || '#';
+        const safeLink = firstLink.startsWith('http') ? firstLink : 'https://' + firstLink;
+
+        // প্রাইস রেন্ডারিং
+        let priceHTML = '';
+        if (box.discount && box.discount < box.price) {
+          priceHTML = `
+            <p class="price">
+              <span class="original-price" >$${box.price}</span>
+              <span class="discounted-price" > $${box.discount}</span>
+            </p>
+          `;
+        } else if (box.price) {
+          priceHTML = `<p class="price" >$${box.price}</p>`;
+        }
+
+        el.innerHTML = `
+        <div class="above-section-of-box">
+        ${priceHTML}  
+        <h3>${highlightedName}</h3>
+          <p class="description-full">${highlightedDesc}</p>
+        </div>
+        <div class="footer-btn-now">
+         <a href="${safeLink}" class="seemore_button" target="_blank">Learn more</a>
+         <a style="text-decoration:none;" href="https://wa.me/8801728827863" class="seemore_button" target="_blank">💬Live chat</a>    
+            
+        </div>
+          
+        `;
+
+        container.appendChild(el);
+      });
+    }
+
+    document.getElementById('searchInput').addEventListener('input', function () {
+      const term = this.value.trim();
+      renderBoxes(term);
+    });
+
+    renderBoxes();
+  </script>
+</body>
+</html>
